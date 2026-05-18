@@ -1,6 +1,7 @@
 const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
+const path = require('path');
 const connectDB = require('./config/db');
 const { errorHandler } = require('./middleware/errorMiddleware');
 
@@ -16,7 +17,15 @@ app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/employees', require('./routes/employeeRoutes'));
 app.use('/api/ai', require('./routes/aiRoutes'));
 
-app.get('/', (req, res) => res.send('API is running...'));
+// Serve frontend in production
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, '../client/build')));
+  app.get('*', (req, res) =>
+    res.sendFile(path.resolve(__dirname, '../client/build', 'index.html'))
+  );
+} else {
+  app.get('/', (req, res) => res.send('API is running...'));
+}
 
 app.use(errorHandler);
 
